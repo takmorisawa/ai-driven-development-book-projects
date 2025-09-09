@@ -1,46 +1,62 @@
 <script>
+	import { onMount } from 'svelte';
 	import SongCard from '$lib/components/SongCard.svelte';
+	import { favoriteIds } from '$lib/module/favorite';
 
-	// 仮のお気に入り曲データ
-	const favoriteSongs = [
-		{
-			id: 1,
-			title: "夜空の星",
-			imagePath: "/img/song_default.webp",
-			artist: {
-				id: 1,
-				name: "星野アーティスト"
-			}
-		},
-		{
-			id: 2,
-			title: "青い海",
-			imagePath: "/img/song_default.webp",
-			artist: {
-				id: 2,
-				name: "海野ミュージシャン"
-			}
-		},
-		{
-			id: 3,
-			title: "風のうた",
-			imagePath: "/img/song_default.webp",
-			artist: {
-				id: 3,
-				name: "風田サウンド"
-			}
+	let favoriteSongs = [];
+	let loading = true;
+
+	// お気に入りの曲IDが変更されたときに曲データを取得
+	$: if ($favoriteIds.length > 0) {
+		fetchFavoriteSongs();
+	} else {
+		favoriteSongs = [];
+		loading = false;
+	}
+
+	async function fetchFavoriteSongs() {
+		if ($favoriteIds.length === 0) {
+			favoriteSongs = [];
+			loading = false;
+			return;
 		}
-	];
 
-	// お気に入りが空の場合のテスト用（コメントアウトを外すとテストできます）
-	// const favoriteSongs = [];
+		try {
+			loading = true;
+			const songIdsParam = $favoriteIds.join(',');
+			const response = await fetch(`/api/songs?songIds=${songIdsParam}`);
+			
+			if (response.ok) {
+				favoriteSongs = await response.json();
+			} else {
+				console.error('お気に入り曲の取得に失敗しました');
+				favoriteSongs = [];
+			}
+		} catch (error) {
+			console.error('お気に入り曲の取得中にエラーが発生しました:', error);
+			favoriteSongs = [];
+		} finally {
+			loading = false;
+		}
+	}
+
+	onMount(() => {
+		// 初回読み込み時にお気に入りIDがない場合の処理
+		if ($favoriteIds.length === 0) {
+			loading = false;
+		}
+	});
 </script>
 
 <div class="bg-gray-700 min-h-screen">
 	<div class="container mx-auto px-4 py-8">
 		<h1 class="text-white text-3xl font-bold mb-8">お気に入り</h1>
 		
-		{#if favoriteSongs.length === 0}
+		{#if loading}
+			<div class="text-center py-16">
+				<p class="text-gray-300 text-lg">読み込み中...</p>
+			</div>
+		{:else if favoriteSongs.length === 0}
 			<div class="text-center py-16">
 				<p class="text-gray-300 text-lg">お気に入りに追加されている曲はありません</p>
 			</div>
