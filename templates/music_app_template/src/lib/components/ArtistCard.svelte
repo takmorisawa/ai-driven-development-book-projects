@@ -6,7 +6,7 @@
 	<!-- アーティスト画像 -->
 	<div class="mb-3">
 		<img 
-			src={artist.image ? `/uploads/${artist.image}` : '/img/artist_default.webp'} 
+			src={artist.image || '/img/artist_default.webp'} 
 			alt={artist.name}
 			class="w-full h-48 object-cover rounded-lg"
 		/>

@@ -1,72 +1,46 @@
-<script>
+<script lang="ts">
+	import { onMount } from 'svelte';
 	import SongCard from '$lib/components/SongCard.svelte';
 	import ArtistCard from '$lib/components/ArtistCard.svelte';
+	import type { Artist } from '@prisma/client';
+	import type { SongWithArtist } from '$lib/type';
 
-	// 仮のアーティストデータ
-	const artists = [
-		{
-			id: 1,
-			name: 'サクラ・ハルカ',
-			image: null,
-			profile: '春の桜をテーマにした楽曲で人気のアーティスト'
-		},
-		{
-			id: 2,
-			name: 'ムーンライト・エコー',
-			image: null,
-			profile: '夜の静寂を歌声で表現するシンガーソングライター'
-		},
-		{
-			id: 3,
-			name: 'オーシャン・ブルー',
-			image: null,
-			profile: '海をイメージした爽やかなサウンドが特徴'
-		}
-	];
+	let artists: Artist[] = [];
+	let songs: SongWithArtist[] = [];
 
-	// 仮の曲データ（アーティスト情報を含む）
-	const songs = [
-		{
-			id: 1,
-			title: '桜舞い散る道',
-			imagePath: null,
-			audioPath: '/audio/sample1.mp3',
-			artist: {
-				id: 1,
-				name: 'サクラ・ハルカ'
+	// アーティスト情報を取得する関数
+	const fetchArtists = async () => {
+		try {
+			const response = await fetch('/api/artists');
+			if (response.ok) {
+				artists = await response.json();
+			} else {
+				console.error('アーティスト情報の取得に失敗しました');
 			}
-		},
-		{
-			id: 2,
-			title: '月夜のセレナーデ',
-			imagePath: null,
-			audioPath: '/audio/sample2.mp3',
-			artist: {
-				id: 2,
-				name: 'ムーンライト・エコー'
-			}
-		},
-		{
-			id: 3,
-			title: '青い海の向こう',
-			imagePath: null,
-			audioPath: '/audio/sample3.mp3',
-			artist: {
-				id: 3,
-				name: 'オーシャン・ブルー'
-			}
-		},
-		{
-			id: 4,
-			title: '春風のメロディ',
-			imagePath: null,
-			audioPath: '/audio/sample4.mp3',
-			artist: {
-				id: 1,
-				name: 'サクラ・ハルカ'
-			}
+		} catch (error) {
+			console.error('アーティスト情報の取得中にエラーが発生しました:', error);
 		}
-	];
+	};
+
+	// 曲情報を取得する関数
+	const fetchSongs = async () => {
+		try {
+			const response = await fetch('/api/songs');
+			if (response.ok) {
+				songs = await response.json();
+			} else {
+				console.error('曲情報の取得に失敗しました');
+			}
+		} catch (error) {
+			console.error('曲情報の取得中にエラーが発生しました:', error);
+		}
+	};
+
+	// コンポーネントがマウントされた時にアーティスト情報と曲情報を取得
+	onMount(() => {
+		fetchArtists();
+		fetchSongs();
+	});
 </script>
 
 <div class="bg-gray-700 min-h-screen">
