@@ -68,7 +68,8 @@ export function playSong(song: SongWithArtist): void {
 		}
 
 		// 新しいオーディオオブジェクトを作成
-		const newAudio = new Audio(`/${song.audio}`);
+		const audioUrl = song.audio.startsWith('/') ? song.audio : `/${song.audio}`;
+		const newAudio = new Audio(audioUrl);
 		
 		// 音量を設定
 		let volumeValue = 1.0;

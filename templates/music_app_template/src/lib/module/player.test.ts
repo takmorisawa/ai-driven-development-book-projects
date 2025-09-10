@@ -110,32 +110,34 @@ describe('Player Module', () => {
 	afterEach(() => {
 		// テスト後のクリーンアップ
 		const audio = get(currentAudio);
-		if (audio) {
+		if (audio && typeof audio.pause === 'function') {
 			audio.pause();
-			currentAudio.set(null);
 		}
+		currentAudio.set(null);
 		vi.restoreAllMocks();
 	});
 
 	describe('playSong function', () => {
-		it('should create new audio element and start playing', async () => {
-			await playSong(mockSong1);
+		it('should create new audio element and start playing', () => {
+			playSong(mockSong1);
 
 			// Audio要素が作成されたことを確認
-			expect(mockAudio).toHaveBeenCalledWith('/uploads/test-song-1.mp3');
+			expect(mockAudio).toHaveBeenCalledWith('uploads/test-song-1.mp3');
 
 			// ストアが更新されたことを確認
-			expect(get(isPlaying)).toBe(false); // play()が成功するまではfalse
 			expect(get(currentSong)).toEqual(mockSong1);
 			expect(get(currentAudio)).toBeInstanceOf(MockedHTMLAudioElement);
 
 			// 音声ファイルの再生が開始されたことを確認
 			const audio = get(currentAudio) as MockedHTMLAudioElement;
 			expect(audio.play).toHaveBeenCalled();
+			
+			// play()のPromiseが解決される前は再生状態はfalseのまま
+			expect(get(isPlaying)).toBe(false);
 		});
 
-		it('should set audio metadata when loaded', async () => {
-			await playSong(mockSong1);
+		it('should set audio metadata when loaded', () => {
+			playSong(mockSong1);
 			
 			const audio = get(currentAudio) as MockedHTMLAudioElement;
 			
@@ -146,13 +148,13 @@ describe('Player Module', () => {
 			expect(get(audioDuration)).toBe(180);
 		});
 
-		it('should resume playing same song if already loaded', async () => {
+		it('should resume playing same song if already loaded', () => {
 			// 最初の再生
-			await playSong(mockSong1);
+			playSong(mockSong1);
 			const firstAudio = get(currentAudio) as MockedHTMLAudioElement;
 			
 			// 同じ曲を再度再生
-			await playSong(mockSong1);
+			playSong(mockSong1);
 			const secondAudio = get(currentAudio);
 			
 			// 同じオーディオ要素が使用されることを確認
@@ -160,13 +162,13 @@ describe('Player Module', () => {
 			expect(firstAudio.play).toHaveBeenCalledTimes(2);
 		});
 
-		it('should switch to new song when different song is played', async () => {
+		it('should switch to new song when different song is played', () => {
 			// 最初の曲を再生
-			await playSong(mockSong1);
+			playSong(mockSong1);
 			const firstAudio = get(currentAudio) as MockedHTMLAudioElement;
 			
 			// 異なる曲を再生
-			await playSong(mockSong2);
+			playSong(mockSong2);
 			const secondAudio = get(currentAudio) as MockedHTMLAudioElement;
 			
 			// 最初の音声が停止され、新しい音声が作成されたことを確認
@@ -176,20 +178,20 @@ describe('Player Module', () => {
 			expect(get(currentSong)).toEqual(mockSong2);
 		});
 
-		it('should set volume correctly on new audio', async () => {
+		it('should set volume correctly on new audio', () => {
 			// カスタム音量を設定
 			currentVolume.set(0.5);
 			
-			await playSong(mockSong1);
+			playSong(mockSong1);
 			
 			const audio = get(currentAudio) as MockedHTMLAudioElement;
 			expect(audio.volume).toBe(0.5);
 		});
 
-		it('should handle audio loading error', async () => {
+		it('should handle audio loading error', () => {
 			const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 			
-			await playSong(mockSong1);
+			playSong(mockSong1);
 			
 			const audio = get(currentAudio) as MockedHTMLAudioElement;
 			audio.simulateError('Failed to load audio');
@@ -211,7 +213,10 @@ describe('Player Module', () => {
 				return audio;
 			});
 			
-			await playSong(mockSong1);
+			playSong(mockSong1);
+			
+			// Promiseの解決を待つ
+			await new Promise(resolve => setTimeout(resolve, 0));
 			
 			// エラーログが出力され、再生状態がfalseに設定されることを確認
 			expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('再生開始エラー'), expect.any(Object));
@@ -220,8 +225,8 @@ describe('Player Module', () => {
 			consoleSpy.mockRestore();
 		});
 
-		it('should update isPlaying to false when song ends', async () => {
-			await playSong(mockSong1);
+		it('should update isPlaying to false when song ends', () => {
+			playSong(mockSong1);
 			
 			const audio = get(currentAudio) as MockedHTMLAudioElement;
 			
@@ -234,8 +239,8 @@ describe('Player Module', () => {
 	});
 
 	describe('stopSong function', () => {
-		it('should pause current audio and set isPlaying to false', async () => {
-			await playSong(mockSong1);
+		it('should pause current audio and set isPlaying to false', () => {
+			playSong(mockSong1);
 			const audio = get(currentAudio) as MockedHTMLAudioElement;
 			
 			stopSong();
@@ -277,8 +282,8 @@ describe('Player Module', () => {
 	});
 
 	describe('setVolume function', () => {
-		it('should set volume on current audio and update store', async () => {
-			await playSong(mockSong1);
+		it('should set volume on current audio and update store', () => {
+			playSong(mockSong1);
 			const audio = get(currentAudio) as MockedHTMLAudioElement;
 			
 			setVolume(0.7);
@@ -330,8 +335,8 @@ describe('Player Module', () => {
 	});
 
 	describe('getCurrentTime function', () => {
-		it('should return current time from audio element', async () => {
-			await playSong(mockSong1);
+		it('should return current time from audio element', () => {
+			playSong(mockSong1);
 			const audio = get(currentAudio) as MockedHTMLAudioElement;
 			audio.currentTime = 42.5;
 			
@@ -369,8 +374,8 @@ describe('Player Module', () => {
 	});
 
 	describe('getDuration function', () => {
-		it('should return duration from audio element', async () => {
-			await playSong(mockSong1);
+		it('should return duration from audio element', () => {
+			playSong(mockSong1);
 			const audio = get(currentAudio) as MockedHTMLAudioElement;
 			audio.duration = 240.7;
 			
@@ -385,8 +390,8 @@ describe('Player Module', () => {
 			expect(duration).toBe(0);
 		});
 
-		it('should return 0 when duration is not available', async () => {
-			await playSong(mockSong1);
+		it('should return 0 when duration is not available', () => {
+			playSong(mockSong1);
 			const audio = get(currentAudio) as MockedHTMLAudioElement;
 			audio.duration = NaN;
 			
@@ -427,16 +432,16 @@ describe('Player Module', () => {
 			expect(get(playbackTime)).toBe(0);
 		});
 
-		it('should update stores when playing a song', async () => {
-			await playSong(mockSong1);
+		it('should update stores when playing a song', () => {
+			playSong(mockSong1);
 			
 			expect(get(currentSong)).toEqual(mockSong1);
 			expect(get(currentAudio)).toBeInstanceOf(MockedHTMLAudioElement);
 			expect(get(currentVolume)).toBe(1.0);
 		});
 
-		it('should maintain store state between function calls', async () => {
-			await playSong(mockSong1);
+		it('should maintain store state between function calls', () => {
+			playSong(mockSong1);
 			setVolume(0.3);
 			
 			expect(get(currentSong)).toEqual(mockSong1);
@@ -461,9 +466,9 @@ describe('Player Module', () => {
 	});
 
 	describe('Integration scenarios', () => {
-		it('should handle complete play cycle', async () => {
+		it('should handle complete play cycle', () => {
 			// 曲を再生
-			await playSong(mockSong1);
+			playSong(mockSong1);
 			
 			const audio = get(currentAudio) as MockedHTMLAudioElement;
 			expect(get(currentSong)).toEqual(mockSong1);
@@ -484,7 +489,7 @@ describe('Player Module', () => {
 			expect(get(isPlaying)).toBe(false);
 			
 			// 再開（同じ曲）
-			await playSong(mockSong1);
+			playSong(mockSong1);
 			expect(audio.play).toHaveBeenCalledTimes(2);
 			
 			// 曲終了
@@ -492,14 +497,14 @@ describe('Player Module', () => {
 			expect(get(isPlaying)).toBe(false);
 		});
 
-		it('should handle switching between multiple songs', async () => {
+		it('should handle switching between multiple songs', () => {
 			// 最初の曲を再生
-			await playSong(mockSong1);
+			playSong(mockSong1);
 			const firstAudio = get(currentAudio) as MockedHTMLAudioElement;
 			expect(get(currentSong)).toEqual(mockSong1);
 			
 			// 2番目の曲に切り替え
-			await playSong(mockSong2);
+			playSong(mockSong2);
 			const secondAudio = get(currentAudio) as MockedHTMLAudioElement;
 			
 			// 最初の曲が停止され、2番目の曲が開始されることを確認

@@ -1,9 +1,12 @@
-<script>
+<script lang="ts">
 	import { favoriteIds, addToFavorite, removeFromFavorite } from '$lib/module/favorite';
+	import { playSong, stopSong, isPlaying, currentSong } from '$lib/module/player';
+	import type { SongWithArtist } from '$lib/type';
 	
-	export let song;
+	export let song: SongWithArtist;
 	
 	$: isFavorite = $favoriteIds.includes(song.id);
+	$: isThisSongPlaying = $isPlaying && $currentSong?.id === song.id;
 	
 	function handleFavoriteToggle() {
 		if (isFavorite) {
@@ -14,13 +17,21 @@
 			alert('お気に入りに追加しました');
 		}
 	}
+	
+	function handlePlayToggle() {
+		if (isThisSongPlaying) {
+			stopSong();
+		} else {
+			playSong(song);
+		}
+	}
 </script>
 
 <div class="bg-gray-800 rounded-lg p-4 hover:bg-gray-700 transition-colors">
 	<!-- アートワーク -->
 	<div class="mb-3">
 		<img 
-			src={song.image || "/img/song_default.webp"} 
+			src={song.image ? (song.image.startsWith('/') ? song.image : `/${song.image}`) : "/img/song_default.webp"} 
 			alt={song.title}
 			class="w-full h-48 object-cover rounded-lg"
 		/>
@@ -39,10 +50,21 @@
 	<!-- 再生ボタンとお気に入り追加ボタン -->
 	<div class="flex items-center justify-between">
 		<!-- 再生ボタン -->
-		<button class="bg-white text-gray-800 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors">
-			<svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-				<path d="M8 5v14l11-7z"/>
-			</svg>
+		<button 
+			on:click={handlePlayToggle}
+			class="bg-white text-gray-800 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors"
+		>
+			{#if isThisSongPlaying}
+				<!-- 一時停止アイコン -->
+				<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+					<path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+				</svg>
+			{:else}
+				<!-- 再生アイコン -->
+				<svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+					<path d="M8 5v14l11-7z"/>
+				</svg>
+			{/if}
 		</button>
 
 		<!-- お気に入り追加ボタン -->
