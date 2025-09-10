@@ -106,6 +106,9 @@ export function playSong(song: SongWithArtist): void {
 		// 再生開始
 		newAudio.play().then(() => {
 			isPlaying.set(true);
+			
+			// 再生開始時に再生数をインクリメント
+			incrementSongPlayCount(song.id);
 		}).catch((error) => {
 			console.error('再生開始エラー:', {
 				error: error,
@@ -226,5 +229,46 @@ export function getDuration(): number {
 			function: 'getDuration'
 		});
 		return 0;
+	}
+}
+
+/**
+ * 指定された曲の再生数をインクリメントする
+ * @param songId インクリメントする曲のID
+ */
+async function incrementSongPlayCount(songId: number): Promise<void> {
+	try {
+		const response = await fetch(`/api/songs/${songId}`, {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		});
+
+		if (!response.ok) {
+			console.error('再生数インクリメントAPIエラー:', {
+				status: response.status,
+				statusText: response.statusText,
+				songId: songId,
+				function: 'incrementSongPlayCount'
+			});
+			return;
+		}
+
+		const result = await response.json();
+		console.log('再生数をインクリメントしました:', {
+			songId: songId,
+			message: result.message,
+			function: 'incrementSongPlayCount'
+		});
+
+	} catch (error) {
+		console.error('incrementSongPlayCount関数でエラーが発生しました:', {
+			error: error,
+			message: error instanceof Error ? error.message : 'Unknown error',
+			stack: error instanceof Error ? error.stack : undefined,
+			songId: songId,
+			function: 'incrementSongPlayCount'
+		});
 	}
 }

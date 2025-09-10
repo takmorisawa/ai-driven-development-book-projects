@@ -37,14 +37,15 @@
 		/>
 	</div>
 
-	<!-- 曲名とアーティスト名 -->
+	<!-- 曲名とアーティスト名と再生数 -->
 	<div class="mb-4">
 		<h3 class="text-white font-bold text-lg mb-1 truncate">{song.title}</h3>
-		<p class="text-gray-300 text-sm truncate">
+		<p class="text-gray-300 text-sm truncate mb-1">
 			<a href="/artists/{song.artist.id}" class="hover:text-white transition-colors">
 				{song.artist.name}
 			</a>
 		</p>
+		<p class="text-gray-400 text-xs">再生数: {song.playCount}回</p>
 	</div>
 
 	<!-- 再生ボタンとお気に入り追加ボタン -->
