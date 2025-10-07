@@ -1,8 +1,16 @@
 generator client {
   provider = "prisma-client-js"
+  engineType = "binary"
 }
 
 datasource db {
   provider = "sqlite"
   url      = "file:./database.db"
+}
+
+model Score {
+  id String @id @default(uuid())
+  player String
+  points Int
+  createAt DateTime @default(now())
 }

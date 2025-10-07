@@ -10,6 +10,13 @@
 	let score = 0;
 	let gameState: GameState = 'playing';
 	let bestScore = 0;
+	
+	// ランキング関連
+	let rankings: Array<{rank: number, player: string, points: number, createAt: string}> = [];
+	let showNameInput = false;
+	let playerName = '';
+	let isSubmitting = false;
+	let showRankings = false;
 
 	// スワイプ検出用の変数
 	let startX = 0;
@@ -431,6 +438,9 @@
 		// 空きマスがなく、隣接する同じ数字もない場合はゲームオーバー
 		console.log('ゲームオーバー条件を満たしました');
 		gameState = 'gameOver';
+		
+		// ゲームオーバー時にランキングを取得
+		fetchRankings();
 	}
 
 	// 実際に移動を試してゲームオーバーかどうかを判定
@@ -555,9 +565,75 @@
 		}
 	}
 
+	// スコアをサーバーに送信
+	async function submitScore() {
+		if (!playerName.trim() || isSubmitting) return;
+		
+		isSubmitting = true;
+		
+		try {
+			const response = await fetch('/api/scores', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					player: playerName.trim(),
+					points: score
+				})
+			});
+			
+			if (response.ok) {
+				console.log('スコア送信成功');
+				// ランキングを再取得
+				await fetchRankings();
+				showNameInput = false;
+			} else {
+				console.error('スコア送信失敗:', response.status);
+			}
+		} catch (error) {
+			console.error('スコア送信エラー:', error);
+		} finally {
+			isSubmitting = false;
+		}
+	}
+	
+	// ランキングを取得
+	async function fetchRankings() {
+		try {
+			const response = await fetch('/api/scores');
+			if (response.ok) {
+				const data = await response.json();
+				rankings = data.rankings || [];
+				showRankings = true;
+			} else {
+				console.error('ランキング取得失敗:', response.status);
+			}
+		} catch (error) {
+			console.error('ランキング取得エラー:', error);
+		}
+	}
+	
+	// ユーザー名入力ポップアップを表示
+	function showNameInputPopup() {
+		showNameInput = true;
+		playerName = '';
+	}
+	
+	// ランキング表示を切り替え
+	function toggleRankings() {
+		showRankings = !showRankings;
+		if (showRankings && rankings.length === 0) {
+			fetchRankings();
+		}
+	}
+
 	// ゲームリスタート
 	function restartGame() {
 		initGame();
+		showNameInput = false;
+		showRankings = false;
+		playerName = '';
 	}
 
 	// コンポーネントマウント時の初期化
@@ -629,13 +705,64 @@
 			<div class="game-message">
 				<h2>ゲームオーバー</h2>
 				<p>最終スコア: {score}</p>
-				<button on:click={restartGame}>もう一度プレイ</button>
+				<div class="game-over-buttons">
+					<button on:click={showNameInputPopup}>スコアを記録</button>
+					<button on:click={toggleRankings}>ランキングを見る</button>
+					<button on:click={restartGame}>もう一度プレイ</button>
+				</div>
+			</div>
+		</div>
+	{/if}
+	
+	<!-- ユーザー名入力ポップアップ -->
+	{#if showNameInput}
+		<div class="game-overlay">
+			<div class="game-message">
+				<h2>スコアを記録</h2>
+				<p>プレイヤー名を入力してください</p>
+				<input 
+					type="text" 
+					bind:value={playerName} 
+					placeholder="プレイヤー名"
+					maxlength="20"
+					class="name-input"
+				/>
+				<div class="name-input-buttons">
+					<button on:click={submitScore} disabled={isSubmitting || !playerName.trim()}>
+						{isSubmitting ? '送信中...' : '送信'}
+					</button>
+					<button on:click={() => showNameInput = false}>キャンセル</button>
+				</div>
+			</div>
+		</div>
+	{/if}
+	
+	<!-- ランキング表示 -->
+	{#if showRankings}
+		<div class="game-overlay">
+			<div class="game-message rankings-modal">
+				<h2>ランキング</h2>
+				<div class="rankings-list">
+					{#if rankings.length > 0}
+						{#each rankings as ranking}
+							<div class="ranking-item">
+								<span class="rank">{ranking.rank}位</span>
+								<span class="player">{ranking.player}</span>
+								<span class="points">{ranking.points.toLocaleString()}点</span>
+							</div>
+						{/each}
+					{:else}
+						<p>ランキングデータがありません</p>
+					{/if}
+				</div>
+				<button on:click={() => showRankings = false}>閉じる</button>
 			</div>
 		</div>
 	{/if}
 	
 	<div class="controls">
 		<button on:click={restartGame}>新しいゲーム</button>
+		<button on:click={toggleRankings}>ランキング</button>
 	</div>
 </div>
 
@@ -804,6 +931,103 @@
 
 	.controls {
 		margin-top: 20px;
+		display: flex;
+		gap: 10px;
+		justify-content: center;
+	}
+	
+	.game-over-buttons {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		margin-top: 20px;
+	}
+	
+	.name-input {
+		width: 100%;
+		padding: 10px;
+		border: 2px solid #bbada0;
+		border-radius: 5px;
+		font-size: 1rem;
+		margin: 10px 0;
+		text-align: center;
+	}
+	
+	.name-input:focus {
+		outline: none;
+		border-color: #8f7a66;
+	}
+	
+	.name-input-buttons {
+		display: flex;
+		gap: 10px;
+		justify-content: center;
+	}
+	
+	.rankings-modal {
+		max-width: 400px;
+		width: 90%;
+	}
+	
+	.rankings-list {
+		max-height: 300px;
+		overflow-y: auto;
+		margin: 20px 0;
+	}
+	
+	.ranking-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 10px;
+		margin: 5px 0;
+		background: #f8f8f8;
+		border-radius: 5px;
+		border-left: 4px solid #8f7a66;
+	}
+	
+	.ranking-item:first-child {
+		background: #ffd700;
+		border-left-color: #ff6b35;
+	}
+	
+	.ranking-item:nth-child(2) {
+		background: #c0c0c0;
+		border-left-color: #8f7a66;
+	}
+	
+	.ranking-item:nth-child(3) {
+		background: #cd7f32;
+		border-left-color: #8f7a66;
+	}
+	
+	.rank {
+		font-weight: bold;
+		color: #8f7a66;
+		min-width: 40px;
+	}
+	
+	.player {
+		flex: 1;
+		text-align: left;
+		margin: 0 10px;
+		font-weight: bold;
+	}
+	
+	.points {
+		font-weight: bold;
+		color: #8f7a66;
+		min-width: 80px;
+		text-align: right;
+	}
+	
+	button:disabled {
+		background: #ccc;
+		cursor: not-allowed;
+	}
+	
+	button:disabled:hover {
+		background: #ccc;
 	}
 
 	/* レスポンシブデザイン */
@@ -831,6 +1055,29 @@
 		
 		.score-value {
 			font-size: 1.2rem;
+		}
+		
+		.controls {
+			flex-direction: column;
+		}
+		
+		.game-over-buttons {
+			gap: 8px;
+		}
+		
+		.name-input-buttons {
+			flex-direction: column;
+		}
+		
+		.ranking-item {
+			flex-direction: column;
+			text-align: center;
+			gap: 5px;
+		}
+		
+		.player {
+			text-align: center;
+			margin: 0;
 		}
 	}
 </style>
