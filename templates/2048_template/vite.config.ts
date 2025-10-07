@@ -5,14 +5,5 @@ export default defineConfig({
 	plugins: [sveltekit()],
 	test: {
 		include: ['src/**/*.{test,spec}.{js,ts}']
-	},
-	ssr: {
-		noExternal: ['@prisma/client']
-	},
-	optimizeDeps: {
-		exclude: ['@prisma/client']
-	},
-	define: {
-		global: 'globalThis'
 	}
 });
