@@ -787,13 +787,24 @@
 		justify-content: space-between;
 		align-items: center;
 		margin-bottom: 20px;
+		background: rgba(0, 0, 0, 0.1);
+		padding: 20px;
+		border-radius: 15px;
+		backdrop-filter: blur(10px);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 	}
 
 	h1 {
-		color: #776e65;
+		color: #f9f6f2;
 		font-size: 3rem;
 		margin: 0;
 		font-weight: bold;
+		text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+		background: linear-gradient(45deg, #f9f6f2, #ffffff);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
 	}
 
 	.scores {
@@ -802,28 +813,41 @@
 	}
 
 	.score-box {
-		background: #bbada0;
-		padding: 10px 15px;
-		border-radius: 5px;
+		background: linear-gradient(135deg, #8f7a66, #bbada0);
+		padding: 15px 20px;
+		border-radius: 10px;
 		color: white;
-		min-width: 80px;
+		min-width: 100px;
+		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+		border: 2px solid rgba(255, 255, 255, 0.1);
+		text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 	}
 
 	.score-label {
-		font-size: 0.8rem;
+		font-size: 0.9rem;
 		text-transform: uppercase;
 		font-weight: bold;
+		letter-spacing: 1px;
+		opacity: 0.9;
 	}
 
 	.score-value {
-		font-size: 1.5rem;
+		font-size: 1.8rem;
 		font-weight: bold;
+		margin-top: 5px;
+		text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 	}
 
 	.game-info {
 		margin-bottom: 20px;
-		color: #776e65;
+		color: #f9f6f2;
 		font-size: 1.1rem;
+		background: rgba(0, 0, 0, 0.2);
+		padding: 15px;
+		border-radius: 10px;
+		text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+		backdrop-filter: blur(10px);
+		border: 1px solid rgba(255, 255, 255, 0.1);
 	}
 
 	.game-board {
@@ -1037,7 +1061,8 @@
 		}
 		
 		h1 {
-			font-size: 2rem;
+			font-size: 2.5rem;
+			text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
 		}
 		
 		.game-board {
@@ -1054,7 +1079,23 @@
 		}
 		
 		.score-value {
-			font-size: 1.2rem;
+			font-size: 1.4rem;
+		}
+		
+		.game-info {
+			font-size: 1rem;
+			padding: 12px;
+		}
+		
+		.header {
+			padding: 15px;
+			flex-direction: column;
+			gap: 15px;
+		}
+		
+		.scores {
+			width: 100%;
+			justify-content: center;
 		}
 		
 		.controls {
