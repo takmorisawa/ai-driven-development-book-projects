@@ -1,14 +1,35 @@
 import type { Prisma } from "@prisma/client";
 
-export type SongWithArtist = Prisma.SongGetPayload<{
+export type RegionWithRelations = Prisma.RegionGetPayload<{
     include: {
-        artist: true;
+        products: true;
+        landmarks: true;
+        terrains: true;
     };
 }>;
 
-
-export type ArtistWithSongs = Prisma.ArtistGetPayload<{
+export type ProductWithRegion = Prisma.ProductGetPayload<{
     include: {
-        songs: true;
+        region: true;
     };
 }>;
+
+export type LandmarkWithRegion = Prisma.LandmarkGetPayload<{
+    include: {
+        region: true;
+    };
+}>;
+
+export type TerrainWithRegion = Prisma.TerrainGetPayload<{
+    include: {
+        region: true;
+    };
+}>;
+
+export type TravelPlanItem = {
+    id: number;
+    type: 'region' | 'landmark';
+    name: string;
+    latitude: number;
+    longitude: number;
+};

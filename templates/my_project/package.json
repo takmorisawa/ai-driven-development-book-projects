@@ -51,6 +51,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"leaflet": "^1.9.4",
 		"uuid": "^10.0.0"
 	}
 }
