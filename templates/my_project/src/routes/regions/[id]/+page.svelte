@@ -79,23 +79,23 @@
 
 {#if region}
   <div class="space-y-4">
-    <h1 class="text-3xl font-bold text-white mb-4">{region.name}</h1>
+    <h1 class="text-3xl font-bold text-orange-600 mb-4">{region.name}</h1>
 
-    <div class="bg-gray-800 p-4 rounded-lg">
-      <h2 class="text-xl font-bold text-white mb-2">地域情報</h2>
-      <p class="text-gray-300">都道府県コード: {region.prefectureCode}</p>
+    <div class="bg-white p-4 rounded-lg shadow-md border-2 border-orange-200">
+      <h2 class="text-xl font-bold text-orange-600 mb-2">地域情報</h2>
+      <p class="text-gray-600">都道府県コード: {region.prefectureCode}</p>
       {#if region.description}
-        <p class="text-gray-300 mt-2">{region.description}</p>
+        <p class="text-gray-600 mt-2">{region.description}</p>
       {/if}
     </div>
 
-    <div class="bg-gray-800 p-4 rounded-lg">
+    <div class="bg-white p-4 rounded-lg shadow-md border-2 border-orange-200">
       <MapWidget />
     </div>
 
     {#if topProducts.length > 0}
-      <div class="bg-gray-800 p-4 rounded-lg">
-        <h2 class="text-2xl font-bold text-white mb-4">生産量ベスト3</h2>
+      <div class="bg-white p-4 rounded-lg shadow-md border-2 border-orange-200">
+        <h2 class="text-2xl font-bold text-orange-600 mb-4">⭐ 生産量ベスト3</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           {#each topProducts as product}
             <ProductCard {product} />
@@ -104,21 +104,21 @@
       </div>
     {/if}
 
-    <h2 class="text-2xl font-bold text-white mt-8 mb-4">名産品一覧</h2>
+    <h2 class="text-2xl font-bold text-orange-600 mt-8 mb-4">名産品一覧</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {#each products as product}
         <ProductCard {product} />
       {/each}
     </div>
 
-    <h2 class="text-2xl font-bold text-white mt-8 mb-4">名所一覧</h2>
+    <h2 class="text-2xl font-bold text-orange-600 mt-8 mb-4">名所一覧</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {#each landmarks as landmark}
         <LandmarkCard {landmark} />
       {/each}
     </div>
 
-    <h2 class="text-2xl font-bold text-white mt-8 mb-4">地形一覧</h2>
+    <h2 class="text-2xl font-bold text-orange-600 mt-8 mb-4">地形一覧</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {#each terrains as terrain}
         <TerrainCard {terrain} />
@@ -126,6 +126,6 @@
     </div>
   </div>
 {:else}
-  <p class="text-white">読み込み中...</p>
+  <p class="text-gray-600">読み込み中...</p>
 {/if}
 

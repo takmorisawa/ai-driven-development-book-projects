@@ -68,7 +68,7 @@
       }
 
       const iconColor =
-        marker.type === 'product' ? 'green' : marker.type === 'landmark' ? 'blue' : 'brown';
+        marker.type === 'product' ? '#22c55e' : marker.type === 'landmark' ? '#3b82f6' : '#b45309';
       const icon = leaflet.default.divIcon({
         className: 'custom-marker',
         html: `<div style="background-color: ${iconColor}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white;"></div>`,
@@ -89,7 +89,26 @@
   }
 </script>
 
-<div id="map-container" bind:this={mapContainer} class="w-full h-full min-h-[400px]"></div>
+<div class="relative w-full">
+  <div id="map-container" bind:this={mapContainer} class="w-full h-full min-h-[400px]"></div>
+  <div class="absolute top-4 right-4 bg-white bg-opacity-95 text-gray-800 p-3 rounded-lg shadow-lg z-[1000] border-2 border-orange-200">
+    <h3 class="text-sm font-bold mb-2 text-orange-600">凡例</h3>
+    <div class="space-y-2 text-xs">
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 rounded-full bg-green-500 border-2 border-gray-300"></div>
+        <span class="text-gray-700">名産品</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 rounded-full bg-blue-500 border-2 border-gray-300"></div>
+        <span class="text-gray-700">名所</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 rounded-full bg-amber-700 border-2 border-gray-300"></div>
+        <span class="text-gray-700">地形</span>
+      </div>
+    </div>
+  </div>
+</div>
 
 <style>
   :global(.custom-marker) {

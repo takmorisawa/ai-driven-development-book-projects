@@ -35,30 +35,30 @@
 </script>
 
 <div class="space-y-4">
-  <h1 class="text-3xl font-bold text-white mb-4">旅行プラン</h1>
+  <h1 class="text-3xl font-bold text-orange-600 mb-4">旅行プラン - まなび旅マップ</h1>
 
-  <div class="bg-gray-800 p-4 rounded-lg mb-4">
+  <div class="bg-white p-4 rounded-lg mb-4 shadow-md border-2 border-orange-200">
     <MapWidget />
   </div>
 
   {#if items.length === 0}
-    <div class="bg-gray-800 p-4 rounded-lg">
-      <p class="text-white">旅行プランに追加された項目はありません。</p>
+    <div class="bg-white p-4 rounded-lg shadow-md border-2 border-orange-200">
+      <p class="text-gray-600 text-center py-4">旅行プランに追加された項目はありません。</p>
     </div>
   {:else}
-    <div class="bg-gray-800 p-4 rounded-lg">
-      <h2 class="text-2xl font-bold text-white mb-4">旅行先候補</h2>
+    <div class="bg-white p-4 rounded-lg shadow-md border-2 border-orange-200">
+      <h2 class="text-2xl font-bold text-orange-600 mb-4">旅行先候補</h2>
       <div class="space-y-2">
         {#each items as item}
-          <div class="bg-gray-700 p-4 rounded flex items-center justify-between">
+          <div class="bg-orange-50 p-4 rounded flex items-center justify-between border-2 border-orange-200 hover:border-orange-400 transition-colors">
             <div>
-              <h3 class="text-lg font-bold text-white">{item.name}</h3>
-              <p class="text-gray-300 text-sm">
+              <h3 class="text-lg font-bold text-orange-600">{item.name}</h3>
+              <p class="text-gray-600 text-sm">
                 {item.type === 'region' ? '地域' : '名所'} | 緯度: {item.latitude}, 経度: {item.longitude}
               </p>
             </div>
             <button
-              class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors font-semibold shadow-sm"
               on:click={() => handleRemove(item.id, item.type)}
             >
               削除

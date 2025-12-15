@@ -136,138 +136,138 @@
   onMount(fetchProducts);
 </script>
 
-<div class="bg-gray-700 min-h-screen p-4">
-  <a href="/admin/regions" class="text-blue-500 hover:underline mb-4 inline-block">← 地域一覧に戻る</a>
+<div class="bg-orange-50 min-h-screen p-4">
+  <a href="/admin/regions" class="text-orange-500 hover:text-orange-600 hover:underline mb-4 inline-block transition-colors">← 地域一覧に戻る</a>
   <button
-    class="bg-blue-500 text-white p-2 rounded float-right mb-4"
+    class="bg-orange-400 text-white p-2 rounded float-right mb-4 hover:bg-orange-500 transition-colors font-semibold shadow-sm"
     on:click={() => showModal.set(true)}
   >
     新規名産品追加
   </button>
 
   {#if $showModal}
-    <div class="fixed inset-0 bg-gray-700 bg-opacity-75 flex items-center justify-center z-50">
-      <div class="bg-gray-800 p-4 rounded shadow-lg w-1/3">
-        <h2 class="text-xl mb-4 text-white">新規名産品追加</h2>
-        <label class="block mb-2 text-white">
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white p-4 rounded-lg shadow-xl w-1/3 border-2 border-orange-200">
+        <h2 class="text-xl mb-4 text-orange-600 font-bold">新規名産品追加</h2>
+        <label class="block mb-2 text-gray-700">
           名産品名:
-          <input type="text" bind:value={newProductName} class="border p-2 w-full bg-gray-700 text-white" />
+          <input type="text" bind:value={newProductName} class="border-2 border-orange-200 p-2 w-full bg-white text-gray-800 rounded focus:border-orange-400 focus:outline-none" />
         </label>
-        <label class="block mb-2 text-white">
+        <label class="block mb-2 text-gray-700">
           生産量:
-          <input type="number" bind:value={newProductionAmount} class="border p-2 w-full bg-gray-700 text-white" />
+          <input type="number" bind:value={newProductionAmount} class="border-2 border-orange-200 p-2 w-full bg-white text-gray-800 rounded focus:border-orange-400 focus:outline-none" />
         </label>
-        <label class="block mb-2 text-white">
+        <label class="block mb-2 text-gray-700">
           ランキング:
-          <input type="number" bind:value={newRanking} class="border p-2 w-full bg-gray-700 text-white" />
+          <input type="number" bind:value={newRanking} class="border-2 border-orange-200 p-2 w-full bg-white text-gray-800 rounded focus:border-orange-400 focus:outline-none" />
         </label>
-        <label class="block mb-2 text-white">
+        <label class="block mb-2 text-gray-700">
           説明:
-          <textarea bind:value={newDescription} class="border p-2 w-full bg-gray-700 text-white"></textarea>
+          <textarea bind:value={newDescription} class="border-2 border-orange-200 p-2 w-full bg-white text-gray-800 rounded focus:border-orange-400 focus:outline-none"></textarea>
         </label>
-        <label class="block mb-2 text-white">
+        <label class="block mb-2 text-gray-700">
           緯度:
-          <input type="number" step="0.0001" bind:value={newLatitude} class="border p-2 w-full bg-gray-700 text-white" />
+          <input type="number" step="0.0001" bind:value={newLatitude} class="border-2 border-orange-200 p-2 w-full bg-white text-gray-800 rounded focus:border-orange-400 focus:outline-none" />
         </label>
-        <label class="block mb-2 text-white">
+        <label class="block mb-2 text-gray-700">
           経度:
-          <input type="number" step="0.0001" bind:value={newLongitude} class="border p-2 w-full bg-gray-700 text-white" />
+          <input type="number" step="0.0001" bind:value={newLongitude} class="border-2 border-orange-200 p-2 w-full bg-white text-gray-800 rounded focus:border-orange-400 focus:outline-none" />
         </label>
-        <label class="block mb-4 text-white">
+        <label class="block mb-4 text-gray-700">
           画像:
           <input
             type="file"
             accept="image/*"
             on:change={(e) => handleFileChange(e, (file) => (newProductImage = file))}
-            class="border p-2 w-full bg-gray-700 text-white"
+            class="border-2 border-orange-200 p-2 w-full bg-white text-gray-800 rounded focus:border-orange-400 focus:outline-none"
           />
         </label>
         <div class="flex justify-end">
           <button
-            class="bg-gray-500 text-white p-2 rounded mr-2"
+            class="bg-gray-300 text-gray-700 p-2 rounded mr-2 hover:bg-gray-400 transition-colors font-semibold"
             on:click={() => showModal.set(false)}
           >
             キャンセル
           </button>
-          <button class="bg-blue-500 text-white p-2 rounded" on:click={addProduct}>追加</button>
+          <button class="bg-orange-400 text-white p-2 rounded hover:bg-orange-500 transition-colors font-semibold shadow-sm" on:click={addProduct}>追加</button>
         </div>
       </div>
     </div>
   {/if}
 
   {#if $showEditModal}
-    <div class="fixed inset-0 bg-gray-700 bg-opacity-75 flex items-center justify-center z-50">
-      <div class="bg-gray-800 p-4 rounded shadow-lg w-1/3">
-        <h2 class="text-xl mb-4 text-white">名産品情報編集</h2>
-        <label class="block mb-2 text-white">
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white p-4 rounded-lg shadow-xl w-1/3 border-2 border-orange-200">
+        <h2 class="text-xl mb-4 text-orange-600 font-bold">名産品情報編集</h2>
+        <label class="block mb-2 text-gray-700">
           名産品名:
-          <input type="text" bind:value={editProductName} class="border p-2 w-full bg-gray-700 text-white" />
+          <input type="text" bind:value={editProductName} class="border-2 border-orange-200 p-2 w-full bg-white text-gray-800 rounded focus:border-orange-400 focus:outline-none" />
         </label>
-        <label class="block mb-2 text-white">
+        <label class="block mb-2 text-gray-700">
           生産量:
-          <input type="number" bind:value={editProductionAmount} class="border p-2 w-full bg-gray-700 text-white" />
+          <input type="number" bind:value={editProductionAmount} class="border-2 border-orange-200 p-2 w-full bg-white text-gray-800 rounded focus:border-orange-400 focus:outline-none" />
         </label>
-        <label class="block mb-2 text-white">
+        <label class="block mb-2 text-gray-700">
           ランキング:
-          <input type="number" bind:value={editRanking} class="border p-2 w-full bg-gray-700 text-white" />
+          <input type="number" bind:value={editRanking} class="border-2 border-orange-200 p-2 w-full bg-white text-gray-800 rounded focus:border-orange-400 focus:outline-none" />
         </label>
-        <label class="block mb-2 text-white">
+        <label class="block mb-2 text-gray-700">
           説明:
-          <textarea bind:value={editDescription} class="border p-2 w-full bg-gray-700 text-white"></textarea>
+          <textarea bind:value={editDescription} class="border-2 border-orange-200 p-2 w-full bg-white text-gray-800 rounded focus:border-orange-400 focus:outline-none"></textarea>
         </label>
-        <label class="block mb-2 text-white">
+        <label class="block mb-2 text-gray-700">
           緯度:
-          <input type="number" step="0.0001" bind:value={editLatitude} class="border p-2 w-full bg-gray-700 text-white" />
+          <input type="number" step="0.0001" bind:value={editLatitude} class="border-2 border-orange-200 p-2 w-full bg-white text-gray-800 rounded focus:border-orange-400 focus:outline-none" />
         </label>
-        <label class="block mb-2 text-white">
+        <label class="block mb-2 text-gray-700">
           経度:
-          <input type="number" step="0.0001" bind:value={editLongitude} class="border p-2 w-full bg-gray-700 text-white" />
+          <input type="number" step="0.0001" bind:value={editLongitude} class="border-2 border-orange-200 p-2 w-full bg-white text-gray-800 rounded focus:border-orange-400 focus:outline-none" />
         </label>
-        <label class="block mb-4 text-white">
+        <label class="block mb-4 text-gray-700">
           画像:
           <input
             type="file"
             accept="image/*"
             on:change={(e) => handleFileChange(e, (file) => (editProductImage = file))}
-            class="border p-2 w-full bg-gray-700 text-white"
+            class="border-2 border-orange-200 p-2 w-full bg-white text-gray-800 rounded focus:border-orange-400 focus:outline-none"
           />
         </label>
         <div class="flex justify-end">
           <button
-            class="bg-gray-500 text-white p-2 rounded mr-2"
+            class="bg-gray-300 text-gray-700 p-2 rounded mr-2 hover:bg-gray-400 transition-colors font-semibold"
             on:click={() => showEditModal.set(false)}
           >
             キャンセル
           </button>
-          <button class="bg-blue-500 text-white p-2 rounded" on:click={editProduct}>保存</button>
+          <button class="bg-orange-400 text-white p-2 rounded hover:bg-orange-500 transition-colors font-semibold shadow-sm" on:click={editProduct}>保存</button>
         </div>
       </div>
     </div>
   {/if}
 
   {#if $products.length === 0}
-    <p class="text-center text-gray-500">名産品が登録されていません</p>
+    <p class="text-center text-gray-600">名産品が登録されていません</p>
   {:else}
-    <table class="min-w-full bg-gray-800 text-white">
+    <table class="min-w-full bg-white text-gray-800 shadow-md rounded-lg border-2 border-orange-200">
       <thead>
-        <tr>
-          <th class="py-2 px-4 border-b">名産品名</th>
-          <th class="py-2 px-4 border-b">地域名</th>
-          <th class="py-2 px-4 border-b">生産量</th>
-          <th class="py-2 px-4 border-b">ランキング</th>
-          <th class="py-2 px-4 border-b">編集</th>
+        <tr class="bg-orange-100">
+          <th class="py-2 px-4 border-b border-orange-200 text-orange-700 font-bold">名産品名</th>
+          <th class="py-2 px-4 border-b border-orange-200 text-orange-700 font-bold">地域名</th>
+          <th class="py-2 px-4 border-b border-orange-200 text-orange-700 font-bold">生産量</th>
+          <th class="py-2 px-4 border-b border-orange-200 text-orange-700 font-bold">ランキング</th>
+          <th class="py-2 px-4 border-b border-orange-200 text-orange-700 font-bold">編集</th>
         </tr>
       </thead>
       <tbody>
         {#each $products as product}
-          <tr>
-            <td class="py-2 px-4 border-b">{product.name}</td>
-            <td class="py-2 px-4 border-b">{product.region.name}</td>
-            <td class="py-2 px-4 border-b">{product.productionAmount || '-'}</td>
-            <td class="py-2 px-4 border-b">{product.ranking || '-'}</td>
-            <td class="py-2 px-4 border-b text-center">
+          <tr class="hover:bg-orange-50 transition-colors">
+            <td class="py-2 px-4 border-b border-orange-200">{product.name}</td>
+            <td class="py-2 px-4 border-b border-orange-200">{product.region.name}</td>
+            <td class="py-2 px-4 border-b border-orange-200">{product.productionAmount || '-'}</td>
+            <td class="py-2 px-4 border-b border-orange-200">{product.ranking || '-'}</td>
+            <td class="py-2 px-4 border-b border-orange-200 text-center">
               <button
-                class="bg-yellow-500 text-white p-2 rounded"
+                class="bg-yellow-400 text-white p-2 rounded hover:bg-yellow-500 transition-colors font-semibold shadow-sm"
                 on:click={() => openEditModal(product)}
               >
                 編集

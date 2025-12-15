@@ -1,5 +1,5 @@
 {
-	"name": "music-app-ts",
+	"name": "manabi-tabi-map",
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
@@ -11,7 +11,12 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
-		"format": "prettier --write ."
+		"format": "prettier --write .",
+		"seed": "bun run prisma/seed.ts",
+		"seed:full": "bun run scripts/generate-sample-data.ts"
+	},
+	"prisma": {
+		"seed": "bun run prisma/seed.ts"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.28.1",

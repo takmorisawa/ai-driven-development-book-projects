@@ -9,7 +9,7 @@ datasource db {
 
 model Region {
   id        Int      @id @default(autoincrement())
-  name      String
+  name      String   @unique
   prefectureCode String
   latitude  Float
   longitude Float
@@ -34,6 +34,8 @@ model Product {
   region    Region   @relation(fields: [regionId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([name, regionId])
 }
 
 model Landmark {
@@ -47,6 +49,8 @@ model Landmark {
   region    Region   @relation(fields: [regionId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([name, regionId])
 }
 
 model Terrain {
@@ -60,4 +64,6 @@ model Terrain {
   region    Region   @relation(fields: [regionId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([name, regionId])
 }

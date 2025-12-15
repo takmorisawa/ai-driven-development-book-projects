@@ -94,27 +94,30 @@
 </script>
 
 <div class="space-y-4">
-  <h1 class="text-3xl font-bold text-white mb-4">日本地図 - 地域情報</h1>
+  <h1 class="text-3xl font-bold text-orange-600 mb-4">まなび旅マップ - 日本地図で地域情報を発見</h1>
 
-  <div class="bg-gray-800 p-4 rounded-lg mb-4">
-    <h2 class="text-xl font-bold text-white mb-2">フィルター</h2>
+  <div class="bg-white p-4 rounded-lg mb-4 shadow-md border-2 border-orange-200">
+    <h2 class="text-xl font-bold text-orange-600 mb-2">フィルター</h2>
     <div class="flex gap-4">
-      <label class="flex items-center text-white">
+      <label class="flex items-center text-gray-700 cursor-pointer">
         <input type="checkbox" bind:checked={showProducts} on:change={handleFilterChange} class="mr-2" />
+        <div class="w-4 h-4 rounded-full bg-green-500 border-2 border-gray-300 mr-2"></div>
         名産品
       </label>
-      <label class="flex items-center text-white">
+      <label class="flex items-center text-gray-700 cursor-pointer">
         <input type="checkbox" bind:checked={showLandmarks} on:change={handleFilterChange} class="mr-2" />
+        <div class="w-4 h-4 rounded-full bg-blue-500 border-2 border-gray-300 mr-2"></div>
         名所
       </label>
-      <label class="flex items-center text-white">
+      <label class="flex items-center text-gray-700 cursor-pointer">
         <input type="checkbox" bind:checked={showTerrains} on:change={handleFilterChange} class="mr-2" />
+        <div class="w-4 h-4 rounded-full bg-amber-700 border-2 border-gray-300 mr-2"></div>
         地形
       </label>
     </div>
   </div>
 
-  <div class="bg-gray-800 p-4 rounded-lg mb-4">
+  <div class="bg-white p-4 rounded-lg mb-4 shadow-md border-2 border-orange-200">
     <MapWidget />
   </div>
 
@@ -124,21 +127,21 @@
     {/each}
   </div>
 
-  <h2 class="text-2xl font-bold text-white mt-8 mb-4">名産品</h2>
+  <h2 class="text-2xl font-bold text-orange-600 mt-8 mb-4">名産品</h2>
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     {#each products as product}
       <ProductCard {product} />
     {/each}
   </div>
 
-  <h2 class="text-2xl font-bold text-white mt-8 mb-4">名所</h2>
+  <h2 class="text-2xl font-bold text-orange-600 mt-8 mb-4">名所</h2>
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     {#each landmarks as landmark}
       <LandmarkCard {landmark} />
     {/each}
   </div>
 
-  <h2 class="text-2xl font-bold text-white mt-8 mb-4">地形</h2>
+  <h2 class="text-2xl font-bold text-orange-600 mt-8 mb-4">地形</h2>
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     {#each terrains as terrain}
       <TerrainCard {terrain} />
