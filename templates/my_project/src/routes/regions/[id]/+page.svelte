@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
-  import { get } from 'svelte/store';
   import MapWidget from '$lib/components/MapWidget.svelte';
   import ProductCard from '$lib/components/ProductCard.svelte';
   import LandmarkCard from '$lib/components/LandmarkCard.svelte';
@@ -9,29 +8,24 @@
   import { markers } from '$lib/module/map';
   import type { RegionWithRelations, ProductWithRegion, LandmarkWithRegion, TerrainWithRegion } from '$lib/type';
 
-  let region: RegionWithRelations | null = null;
-  let products: ProductWithRegion[] = [];
-  let landmarks: LandmarkWithRegion[] = [];
-  let terrains: TerrainWithRegion[] = [];
+  export let data: { region: RegionWithRelations };
 
-  $: regionId = parseInt(get(page).params.id, 10);
+  let region: RegionWithRelations = data.region;
+  let products: ProductWithRegion[] = region.products || [];
+  let landmarks: LandmarkWithRegion[] = region.landmarks || [];
+  let terrains: TerrainWithRegion[] = region.terrains || [];
 
-  onMount(async () => {
-    await loadRegion();
-  });
-
-  async function loadRegion() {
-    const res = await fetch(`/api/regions/${regionId}`);
-    if (res.ok) {
-      region = await res.json();
-      if (region) {
-        products = region.products;
-        landmarks = region.landmarks;
-        terrains = region.terrains;
-        updateMarkers();
-      }
-    }
+  $: if (data.region) {
+    region = data.region;
+    products = region.products || [];
+    landmarks = region.landmarks || [];
+    terrains = region.terrains || [];
+    updateMarkers();
   }
+
+  onMount(() => {
+    updateMarkers();
+  });
 
   function updateMarkers() {
     const markerList: any[] = [];
@@ -104,28 +98,38 @@
       </div>
     {/if}
 
-    <h2 class="text-2xl font-bold text-orange-600 mt-8 mb-4">名産品一覧</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {#each products as product}
-        <ProductCard {product} />
-      {/each}
-    </div>
+    {#if products.length > 0}
+      <h2 class="text-2xl font-bold text-orange-600 mt-8 mb-4">名産品一覧</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {#each products as product}
+          <ProductCard {product} />
+        {/each}
+      </div>
+    {/if}
 
-    <h2 class="text-2xl font-bold text-orange-600 mt-8 mb-4">名所一覧</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {#each landmarks as landmark}
-        <LandmarkCard {landmark} />
-      {/each}
-    </div>
+    {#if landmarks.length > 0}
+      <h2 class="text-2xl font-bold text-orange-600 mt-8 mb-4">名所一覧</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {#each landmarks as landmark}
+          <LandmarkCard {landmark} />
+        {/each}
+      </div>
+    {/if}
 
-    <h2 class="text-2xl font-bold text-orange-600 mt-8 mb-4">地形一覧</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {#each terrains as terrain}
-        <TerrainCard {terrain} />
-      {/each}
-    </div>
+    {#if terrains.length > 0}
+      <h2 class="text-2xl font-bold text-orange-600 mt-8 mb-4">地形一覧</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {#each terrains as terrain}
+          <TerrainCard {terrain} />
+        {/each}
+      </div>
+    {/if}
+
+    {#if products.length === 0 && landmarks.length === 0 && terrains.length === 0}
+      <div class="bg-orange-50 border-2 border-orange-200 rounded-lg p-6 text-center">
+        <p class="text-orange-600">この地域にはまだ情報が登録されていません。</p>
+      </div>
+    {/if}
   </div>
-{:else}
-  <p class="text-gray-600">読み込み中...</p>
 {/if}
 

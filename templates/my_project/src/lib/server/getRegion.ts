@@ -7,12 +7,23 @@ export async function getRegion(id: number) {
     where: { id },
     include: {
       products: {
+        include: {
+          region: true,
+        },
         orderBy: {
           ranking: 'asc',
         },
       },
-      landmarks: true,
-      terrains: true,
+      landmarks: {
+        include: {
+          region: true,
+        },
+      },
+      terrains: {
+        include: {
+          region: true,
+        },
+      },
     },
   });
 }

@@ -28,9 +28,15 @@
     </div>
   {/if}
   <h3 class="text-xl font-bold text-orange-600 mb-2">{landmark.name}</h3>
-  <p class="text-gray-600 text-sm mb-2">
-    <a href="/regions/{landmark.regionId}" class="hover:text-orange-500 hover:underline transition-colors">{landmark.region.name}</a>
-  </p>
+  {#if landmark.region}
+    <p class="text-gray-600 text-sm mb-2">
+      <a href="/regions/{landmark.regionId}" class="hover:text-orange-500 hover:underline transition-colors">{landmark.region.name}</a>
+    </p>
+  {:else}
+    <p class="text-gray-600 text-sm mb-2">
+      <a href="/regions/{landmark.regionId}" class="hover:text-orange-500 hover:underline transition-colors">地域ID: {landmark.regionId}</a>
+    </p>
+  {/if}
   {#if landmark.description}
     <p class="text-gray-600 text-xs mb-2">{landmark.description}</p>
   {/if}

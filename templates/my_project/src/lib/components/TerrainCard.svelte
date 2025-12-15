@@ -14,9 +14,15 @@
     </div>
   {/if}
   <h3 class="text-xl font-bold text-orange-600 mb-2">{terrain.name}</h3>
-  <p class="text-gray-600 text-sm mb-2">
-    <a href="/regions/{terrain.regionId}" class="hover:text-orange-500 hover:underline transition-colors">{terrain.region.name}</a>
-  </p>
+  {#if terrain.region}
+    <p class="text-gray-600 text-sm mb-2">
+      <a href="/regions/{terrain.regionId}" class="hover:text-orange-500 hover:underline transition-colors">{terrain.region.name}</a>
+    </p>
+  {:else}
+    <p class="text-gray-600 text-sm mb-2">
+      <a href="/regions/{terrain.regionId}" class="hover:text-orange-500 hover:underline transition-colors">地域ID: {terrain.regionId}</a>
+    </p>
+  {/if}
   {#if terrain.description}
     <p class="text-gray-600 text-xs mb-2">{terrain.description}</p>
   {/if}

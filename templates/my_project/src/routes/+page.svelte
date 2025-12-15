@@ -99,19 +99,25 @@
   <div class="bg-white p-4 rounded-lg mb-4 shadow-md border-2 border-orange-200">
     <h2 class="text-xl font-bold text-orange-600 mb-2">フィルター</h2>
     <div class="flex gap-4">
-      <label class="flex items-center text-gray-700 cursor-pointer">
+      <label class="flex items-center text-gray-700 cursor-pointer hover:text-orange-600 transition-colors">
         <input type="checkbox" bind:checked={showProducts} on:change={handleFilterChange} class="mr-2" />
-        <div class="w-4 h-4 rounded-full bg-green-500 border-2 border-gray-300 mr-2"></div>
+        <div class="w-6 h-6 rounded-full bg-green-500 border-2 border-white shadow-md flex items-center justify-center text-xs mr-2">
+          🍎
+        </div>
         名産品
       </label>
-      <label class="flex items-center text-gray-700 cursor-pointer">
+      <label class="flex items-center text-gray-700 cursor-pointer hover:text-orange-600 transition-colors">
         <input type="checkbox" bind:checked={showLandmarks} on:change={handleFilterChange} class="mr-2" />
-        <div class="w-4 h-4 rounded-full bg-blue-500 border-2 border-gray-300 mr-2"></div>
+        <div class="w-6 h-6 rounded-full bg-blue-500 border-2 border-white shadow-md flex items-center justify-center text-xs mr-2">
+          🏛️
+        </div>
         名所
       </label>
-      <label class="flex items-center text-gray-700 cursor-pointer">
+      <label class="flex items-center text-gray-700 cursor-pointer hover:text-orange-600 transition-colors">
         <input type="checkbox" bind:checked={showTerrains} on:change={handleFilterChange} class="mr-2" />
-        <div class="w-4 h-4 rounded-full bg-amber-700 border-2 border-gray-300 mr-2"></div>
+        <div class="w-6 h-6 rounded-full bg-amber-500 border-2 border-white shadow-md flex items-center justify-center text-xs mr-2">
+          ⛰️
+        </div>
         地形
       </label>
     </div>

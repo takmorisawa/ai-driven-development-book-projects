@@ -14,13 +14,15 @@
     if (isInTravelPlan) {
       removeFromTravelPlan(product.regionId, 'region');
     } else {
-      addToTravelPlan(
-        product.regionId,
-        'region',
-        product.region.name,
-        product.region.latitude,
-        product.region.longitude
-      );
+      if (product.region) {
+        addToTravelPlan(
+          product.regionId,
+          'region',
+          product.region.name,
+          product.region.latitude,
+          product.region.longitude
+        );
+      }
     }
   }
 </script>
@@ -34,9 +36,15 @@
     </div>
   {/if}
   <h3 class="text-xl font-bold text-orange-600 mb-2">{product.name}</h3>
-  <p class="text-gray-600 text-sm mb-2">
-    <a href="/regions/{product.regionId}" class="hover:text-orange-500 hover:underline transition-colors">{product.region.name}</a>
-  </p>
+  {#if product.region}
+    <p class="text-gray-600 text-sm mb-2">
+      <a href="/regions/{product.regionId}" class="hover:text-orange-500 hover:underline transition-colors">{product.region.name}</a>
+    </p>
+  {:else}
+    <p class="text-gray-600 text-sm mb-2">
+      <a href="/regions/{product.regionId}" class="hover:text-orange-500 hover:underline transition-colors">地域ID: {product.regionId}</a>
+    </p>
+  {/if}
   {#if product.ranking}
     <p class="text-yellow-500 text-sm mb-2 font-semibold">⭐ 生産量ランキング: {product.ranking}位</p>
   {/if}
