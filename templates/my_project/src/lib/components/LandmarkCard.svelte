@@ -1,21 +1,45 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import type { LandmarkWithRegion } from '$lib/type';
-  import { addToTravelPlan, removeFromTravelPlan, travelPlanItems } from '$lib/module/travelPlan';
+  import { tripPlans, addToTripPlan, removeFromTripPlan } from '$lib/module/travelPlan';
   import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
+  import TripPlanSelector from './TripPlanSelector.svelte';
 
   export let landmark: LandmarkWithRegion;
 
-  $: isInTravelPlan = get(travelPlanItems).some(
-    (item) => item.id === landmark.id && item.type === 'landmark'
+  let showSelector = false;
+  let plans: any[] = [];
+
+  onMount(() => {
+    const unsubscribe = tripPlans.subscribe((value) => {
+      plans = value;
+    });
+    return unsubscribe;
+  });
+
+  $: isInAnyPlan = plans.some((plan) =>
+    plan.items.some((item: any) => item.id === landmark.id && item.type === 'landmark')
   );
 
   function handleTravelPlanClick() {
-    if (isInTravelPlan) {
-      removeFromTravelPlan(landmark.id, 'landmark');
+    if (isInAnyPlan) {
+      // すべてのプランから削除
+      plans.forEach((plan) => {
+        removeFromTripPlan(plan.id, landmark.id, 'landmark');
+      });
     } else {
-      addToTravelPlan(landmark.id, 'landmark', landmark.name, landmark.latitude, landmark.longitude);
+      showSelector = true;
     }
+  }
+
+  function handleSelectPlan(planId: string) {
+    addToTripPlan(planId, landmark.id, 'landmark', landmark.name, landmark.latitude, landmark.longitude);
+    showSelector = false;
+  }
+
+  function handleCancelSelector() {
+    showSelector = false;
   }
 </script>
 
@@ -44,7 +68,11 @@
     class="mt-2 px-4 py-2 bg-orange-400 text-white rounded hover:bg-orange-500 transition-colors font-semibold shadow-sm"
     on:click={handleTravelPlanClick}
   >
-    {isInTravelPlan ? '旅行プランから削除' : '旅行プランに追加'}
+    {isInAnyPlan ? '旅行プランから削除' : '旅行プランに追加'}
   </button>
 </div>
+
+{#if showSelector}
+  <TripPlanSelector onSelect={handleSelectPlan} onCancel={handleCancelSelector} />
+{/if}
 

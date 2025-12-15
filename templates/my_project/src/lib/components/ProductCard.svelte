@@ -1,29 +1,54 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import type { ProductWithRegion } from '$lib/type';
-  import { addToTravelPlan, removeFromTravelPlan, travelPlanItems } from '$lib/module/travelPlan';
+  import { tripPlans, addToTripPlan, removeFromTripPlan } from '$lib/module/travelPlan';
   import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
+  import TripPlanSelector from './TripPlanSelector.svelte';
 
   export let product: ProductWithRegion;
 
-  $: isInTravelPlan = get(travelPlanItems).some(
-    (item) => item.id === product.regionId && item.type === 'region'
+  let showSelector = false;
+  let plans: any[] = [];
+
+  onMount(() => {
+    const unsubscribe = tripPlans.subscribe((value) => {
+      plans = value;
+    });
+    return unsubscribe;
+  });
+
+  $: isInAnyPlan = plans.some((plan) =>
+    plan.items.some((item: any) => item.id === product.regionId && item.type === 'region')
   );
 
   function handleTravelPlanClick() {
-    if (isInTravelPlan) {
-      removeFromTravelPlan(product.regionId, 'region');
+    if (isInAnyPlan) {
+      // すべてのプランから削除
+      plans.forEach((plan) => {
+        removeFromTripPlan(plan.id, product.regionId, 'region');
+      });
     } else {
-      if (product.region) {
-        addToTravelPlan(
-          product.regionId,
-          'region',
-          product.region.name,
-          product.region.latitude,
-          product.region.longitude
-        );
-      }
+      showSelector = true;
     }
+  }
+
+  function handleSelectPlan(planId: string) {
+    if (product.region) {
+      addToTripPlan(
+        planId,
+        product.regionId,
+        'region',
+        product.region.name,
+        product.region.latitude,
+        product.region.longitude
+      );
+    }
+    showSelector = false;
+  }
+
+  function handleCancelSelector() {
+    showSelector = false;
   }
 </script>
 
@@ -58,7 +83,11 @@
     class="mt-2 px-4 py-2 bg-orange-400 text-white rounded hover:bg-orange-500 transition-colors font-semibold shadow-sm"
     on:click={handleTravelPlanClick}
   >
-    {isInTravelPlan ? '旅行プランから削除' : '旅行プランに追加'}
+    {isInAnyPlan ? '旅行プランから削除' : '旅行プランに追加'}
   </button>
 </div>
+
+{#if showSelector}
+  <TripPlanSelector onSelect={handleSelectPlan} onCancel={handleCancelSelector} />
+{/if}
 

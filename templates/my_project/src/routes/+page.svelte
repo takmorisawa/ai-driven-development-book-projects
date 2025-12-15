@@ -5,8 +5,11 @@
   import ProductCard from '$lib/components/ProductCard.svelte';
   import LandmarkCard from '$lib/components/LandmarkCard.svelte';
   import TerrainCard from '$lib/components/TerrainCard.svelte';
-  import { markers, currentFilter } from '$lib/module/map';
+  import { markers, currentFilter, viewportBounds } from '$lib/module/map';
   import type { RegionWithRelations, ProductWithRegion, LandmarkWithRegion, TerrainWithRegion } from '$lib/type';
+  import type { ViewportBounds } from '$lib/module/map';
+
+  import { get } from 'svelte/store';
 
   let regions: RegionWithRelations[] = [];
   let products: ProductWithRegion[] = [];
@@ -18,6 +21,17 @@
 
   onMount(async () => {
     await loadData();
+    
+    // フィルターの変更を監視
+    const unsubscribeFilter = currentFilter.subscribe((filter) => {
+      showProducts = filter.showProducts;
+      showLandmarks = filter.showLandmarks;
+      showTerrains = filter.showTerrains;
+    });
+    
+    return () => {
+      unsubscribeFilter();
+    };
   });
 
   async function loadData() {
@@ -91,6 +105,53 @@
     });
     updateMarkers();
   }
+
+  // ビューポート内かどうかを判定する関数（ストアを直接参照）
+  function isInViewport(latitude: number, longitude: number, currentBounds: ViewportBounds): boolean {
+    if (!currentBounds) return true; // ビューポートが設定されていない場合はすべて表示
+    
+    return (
+      latitude >= currentBounds.south &&
+      latitude <= currentBounds.north &&
+      longitude >= currentBounds.west &&
+      longitude <= currentBounds.east
+    );
+  }
+
+  // フィルタリングされたデータを計算（フィルター + ビューポート）
+  // $viewportBoundsを使用してリアクティブに更新されるようにする
+  $: filteredProducts = (showProducts ? products : []).filter((product) => {
+    if (!product.latitude || !product.longitude) return false;
+    return isInViewport(product.latitude, product.longitude, $viewportBounds);
+  });
+  
+  $: filteredLandmarks = (showLandmarks ? landmarks : []).filter((landmark) => {
+    return isInViewport(landmark.latitude, landmark.longitude, $viewportBounds);
+  });
+  
+  $: filteredTerrains = (showTerrains ? terrains : []).filter((terrain) => {
+    return isInViewport(terrain.latitude, terrain.longitude, $viewportBounds);
+  });
+
+  // フィルタリングされた地域（関連する名産品・名所・地形が表示されている地域）
+  $: filteredRegions = regions.filter((region) => {
+    if (!showProducts && !showLandmarks && !showTerrains) {
+      return true; // すべて非表示の場合はすべて表示
+    }
+    
+    // ビューポート内の関連データがあるかチェック
+    const hasVisibleProducts = showProducts && 
+      region.products.some((p) => p.latitude && p.longitude && isInViewport(p.latitude, p.longitude, $viewportBounds));
+    const hasVisibleLandmarks = showLandmarks && 
+      region.landmarks.some((l) => isInViewport(l.latitude, l.longitude, $viewportBounds));
+    const hasVisibleTerrains = showTerrains && 
+      region.terrains.some((t) => isInViewport(t.latitude, t.longitude, $viewportBounds));
+    
+    // 地域自体がビューポート内にあるか、または関連データがビューポート内にあるか
+    const regionInViewport = isInViewport(region.latitude, region.longitude, $viewportBounds);
+    
+    return regionInViewport || hasVisibleProducts || hasVisibleLandmarks || hasVisibleTerrains;
+  });
 </script>
 
 <div class="space-y-4">
@@ -127,31 +188,46 @@
     <MapWidget />
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    {#each regions as region}
-      <RegionCard {region} />
-    {/each}
-  </div>
+  {#if filteredRegions.length > 0}
+    <h2 class="text-2xl font-bold text-orange-600 mt-8 mb-4">地域</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {#each filteredRegions as region}
+        <RegionCard {region} />
+      {/each}
+    </div>
+  {/if}
 
-  <h2 class="text-2xl font-bold text-orange-600 mt-8 mb-4">名産品</h2>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    {#each products as product}
-      <ProductCard {product} />
-    {/each}
-  </div>
+  {#if filteredProducts.length > 0}
+    <h2 class="text-2xl font-bold text-orange-600 mt-8 mb-4">名産品</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {#each filteredProducts as product}
+        <ProductCard {product} />
+      {/each}
+    </div>
+  {/if}
 
-  <h2 class="text-2xl font-bold text-orange-600 mt-8 mb-4">名所</h2>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    {#each landmarks as landmark}
-      <LandmarkCard {landmark} />
-    {/each}
-  </div>
+  {#if filteredLandmarks.length > 0}
+    <h2 class="text-2xl font-bold text-orange-600 mt-8 mb-4">名所</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {#each filteredLandmarks as landmark}
+        <LandmarkCard {landmark} />
+      {/each}
+    </div>
+  {/if}
 
-  <h2 class="text-2xl font-bold text-orange-600 mt-8 mb-4">地形</h2>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    {#each terrains as terrain}
-      <TerrainCard {terrain} />
-    {/each}
-  </div>
+  {#if filteredTerrains.length > 0}
+    <h2 class="text-2xl font-bold text-orange-600 mt-8 mb-4">地形</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {#each filteredTerrains as terrain}
+        <TerrainCard {terrain} />
+      {/each}
+    </div>
+  {/if}
+
+  {#if filteredRegions.length === 0 && filteredProducts.length === 0 && filteredLandmarks.length === 0 && filteredTerrains.length === 0}
+    <div class="bg-orange-50 border-2 border-orange-200 rounded-lg p-6 text-center mt-8">
+      <p class="text-orange-600">フィルター条件に一致する項目がありません。</p>
+    </div>
+  {/if}
 </div>
 

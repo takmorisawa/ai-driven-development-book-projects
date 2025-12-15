@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { mapInstance, markers, currentFilter, selectedMarker } from '$lib/module/map';
+  import { mapInstance, markers, currentFilter, selectedMarker, viewportBounds } from '$lib/module/map';
   import type { Marker } from '$lib/module/map';
   import { get } from 'svelte/store';
   import 'leaflet/dist/leaflet.css';
@@ -34,6 +34,21 @@
     mapInstance.set(map);
     leafletMap = map;
     updateMarkers();
+    updateViewportBounds();
+
+    // マップの移動・ズーム時にビューポートを更新
+    map.on('move', () => {
+      updateViewportBounds();
+    });
+    map.on('moveend', () => {
+      updateViewportBounds();
+    });
+    map.on('zoom', () => {
+      updateViewportBounds();
+    });
+    map.on('zoomend', () => {
+      updateViewportBounds();
+    });
 
     const unsubscribeMarkers = markers.subscribe(() => {
       updateMarkers();
@@ -113,6 +128,20 @@
 
       mapMarkers.push(leafletMarker);
     });
+  }
+
+  function updateViewportBounds() {
+    if (!leafletMap || !leaflet) return;
+    
+    const bounds = leafletMap.getBounds();
+    if (bounds) {
+      viewportBounds.set({
+        north: bounds.getNorth(),
+        south: bounds.getSouth(),
+        east: bounds.getEast(),
+        west: bounds.getWest(),
+      });
+    }
   }
 </script>
 

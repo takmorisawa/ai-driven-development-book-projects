@@ -16,6 +16,13 @@ export type Marker = {
   data: ProductWithRegion | LandmarkWithRegion | TerrainWithRegion;
 };
 
+export type ViewportBounds = {
+  north: number;
+  south: number;
+  east: number;
+  west: number;
+} | null;
+
 export const mapInstance = writable<any>(null);
 export const markers = writable<Marker[]>([]);
 export const currentFilter = writable<MapFilter>({
@@ -24,6 +31,7 @@ export const currentFilter = writable<MapFilter>({
   showTerrains: true,
 });
 export const selectedMarker = writable<Marker | null>(null);
+export const viewportBounds = writable<ViewportBounds>(null);
 
 export function initMap(containerId: string, options?: { center?: [number, number]; zoom?: number }) {
   if (typeof window === 'undefined') {

@@ -33,3 +33,10 @@ export type TravelPlanItem = {
     latitude: number;
     longitude: number;
 };
+
+export type TripPlan = {
+    id: string;
+    name: string;
+    createdAt: string;
+    items: TravelPlanItem[];
+};
