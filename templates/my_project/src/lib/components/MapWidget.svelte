@@ -5,6 +5,8 @@
   import { get } from 'svelte/store';
   import 'leaflet/dist/leaflet.css';
 
+  export let fitBounds: boolean = false; // マーカー全てが表示されるように位置とズームを調整するか
+
   let mapContainer: HTMLDivElement;
   let leaflet: any;
   let leafletMap: any;
@@ -52,10 +54,34 @@
 
     const unsubscribeMarkers = markers.subscribe(() => {
       updateMarkers();
+      // fitBoundsが有効な場合、マーカー更新後に再調整
+      if (fitBounds && leafletMap && leaflet) {
+        setTimeout(() => {
+          if (mapMarkers.length > 0) {
+            const group = new leaflet.default.featureGroup(mapMarkers);
+            leafletMap.fitBounds(group.getBounds().pad(0.1), {
+              maxZoom: 15,
+              animate: true,
+            });
+          }
+        }, 100);
+      }
     });
 
     const unsubscribeFilter = currentFilter.subscribe(() => {
       updateMarkers();
+      // fitBoundsが有効な場合、フィルター変更後にも再調整
+      if (fitBounds && leafletMap && leaflet) {
+        setTimeout(() => {
+          if (mapMarkers.length > 0) {
+            const group = new leaflet.default.featureGroup(mapMarkers);
+            leafletMap.fitBounds(group.getBounds().pad(0.1), {
+              maxZoom: 15,
+              animate: true,
+            });
+          }
+        }, 100);
+      }
     });
 
     return () => {
@@ -128,6 +154,15 @@
 
       mapMarkers.push(leafletMarker);
     });
+
+    // fitBoundsが有効な場合、マーカー全てが表示されるように位置とズームを調整
+    if (fitBounds && mapMarkers.length > 0) {
+      const group = new leaflet.default.featureGroup(mapMarkers);
+      leafletMap.fitBounds(group.getBounds().pad(0.1), {
+        maxZoom: 15, // 最大ズームレベルを制限
+        animate: true,
+      });
+    }
   }
 
   function updateViewportBounds() {

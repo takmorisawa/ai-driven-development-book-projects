@@ -69,7 +69,7 @@ function createTripPlansStore() {
         return newPlans;
       });
     },
-    removeItem: (planId: string, itemId: number, itemType: 'region' | 'landmark') => {
+    removeItem: (planId: string, itemId: number, itemType: 'region' | 'landmark' | 'terrain') => {
       update((plans) => {
         const newPlans = plans.map((plan) => {
           if (plan.id === planId) {
@@ -122,7 +122,7 @@ export function deleteTripPlan(planId: string) {
   tripPlans.delete(planId);
 }
 
-export function addToTripPlan(planId: string, itemId: number, itemType: 'region' | 'landmark', name: string, latitude: number, longitude: number) {
+export function addToTripPlan(planId: string, itemId: number, itemType: 'region' | 'landmark' | 'terrain', name: string, latitude: number, longitude: number) {
   tripPlans.addItem(planId, {
     id: itemId,
     type: itemType,
@@ -132,7 +132,7 @@ export function addToTripPlan(planId: string, itemId: number, itemType: 'region'
   });
 }
 
-export function removeFromTripPlan(planId: string, itemId: number, itemType: 'region' | 'landmark') {
+export function removeFromTripPlan(planId: string, itemId: number, itemType: 'region' | 'landmark' | 'terrain') {
   tripPlans.removeItem(planId, itemId, itemType);
 }
 
@@ -161,7 +161,7 @@ export const travelPlanItems = {
       tripPlans.addItem(defaultPlan.id, item);
     }
   },
-  remove: (id: number, type: 'region' | 'landmark') => {
+  remove: (id: number, type: 'region' | 'landmark' | 'terrain') => {
     const plans = tripPlans.get();
     plans.forEach((plan) => {
       tripPlans.removeItem(plan.id, id, type);
@@ -179,7 +179,7 @@ export const travelPlanItems = {
   },
 };
 
-export function addToTravelPlan(itemId: number, itemType: 'region' | 'landmark', name: string, latitude: number, longitude: number) {
+export function addToTravelPlan(itemId: number, itemType: 'region' | 'landmark' | 'terrain', name: string, latitude: number, longitude: number) {
   const plans = tripPlans.get();
   if (plans.length === 0) {
     tripPlans.create('デフォルトの旅行プラン');
@@ -190,7 +190,7 @@ export function addToTravelPlan(itemId: number, itemType: 'region' | 'landmark',
   }
 }
 
-export function removeFromTravelPlan(itemId: number, itemType: 'region' | 'landmark') {
+export function removeFromTravelPlan(itemId: number, itemType: 'region' | 'landmark' | 'terrain') {
   const plans = tripPlans.get();
   plans.forEach((plan) => {
     removeFromTripPlan(plan.id, itemId, itemType);

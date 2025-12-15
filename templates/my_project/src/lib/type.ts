@@ -28,7 +28,7 @@ export type TerrainWithRegion = Prisma.TerrainGetPayload<{
 
 export type TravelPlanItem = {
     id: number;
-    type: 'region' | 'landmark';
+    type: 'region' | 'landmark' | 'terrain';
     name: string;
     latitude: number;
     longitude: number;

@@ -155,7 +155,7 @@
 </script>
 
 <div class="space-y-4">
-  <h1 class="text-3xl font-bold text-orange-600 mb-4">まなび旅マップ - 日本地図で地域情報を発見</h1>
+  <h1 class="text-3xl font-bold text-orange-600 mb-4">まなび旅マップ - 日本地図で地域の魅力を発見</h1>
 
   <div class="bg-white p-4 rounded-lg mb-4 shadow-md border-2 border-orange-200">
     <h2 class="text-xl font-bold text-orange-600 mb-2">フィルター</h2>

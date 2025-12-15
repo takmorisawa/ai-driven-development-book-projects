@@ -3,7 +3,7 @@
   import MapWidget from '$lib/components/MapWidget.svelte';
   import { tripPlans, createTripPlan, deleteTripPlan, removeFromTripPlan, updateTripPlanName } from '$lib/module/travelPlan';
   import { markers } from '$lib/module/map';
-  import type { TripPlan, TravelPlanItem } from '$lib/type';
+  import type { TripPlan, TravelPlanItem, RegionWithRelations, LandmarkWithRegion, TerrainWithRegion } from '$lib/type';
   import { get } from 'svelte/store';
 
   let plans: TripPlan[] = [];
@@ -21,21 +21,39 @@
       } else if (!selectedPlanId && plans.length > 0) {
         selectedPlanId = plans[0].id;
       }
-      updateMarkers();
     });
     return unsubscribe;
   });
 
+  // selectedPlanIdが変更されたときにマーカーを更新
+  $: if (selectedPlanId) {
+    updateMarkers();
+  }
+
   function updateMarkers() {
-    const allItems: TravelPlanItem[] = plans.flatMap((plan) => plan.items);
-    const markerList = allItems.map((item) => ({
-      id: item.id,
-      type: item.type === 'region' ? 'product' : 'landmark',
-      name: item.name,
-      latitude: item.latitude,
-      longitude: item.longitude,
-      data: item,
-    }));
+    if (!selectedPlanId) {
+      markers.set([]);
+      return;
+    }
+    const selectedPlan = plans.find((p) => p.id === selectedPlanId);
+    if (!selectedPlan) {
+      markers.set([]);
+      return;
+    }
+    const markerList = selectedPlan.items.map((item: TravelPlanItem) => {
+      const markerType: 'product' | 'landmark' | 'terrain' = 
+        item.type === 'region' ? 'product' : 
+        item.type === 'landmark' ? 'landmark' : 
+        'terrain';
+      return {
+        id: item.id,
+        type: markerType,
+        name: item.name,
+        latitude: item.latitude,
+        longitude: item.longitude,
+        data: item as any, // TravelPlanItemをMarkerのdata型に合わせるためanyにキャスト
+      };
+    });
     markers.set(markerList);
   }
 
@@ -57,7 +75,7 @@
     }
   }
 
-  function handleRemoveItem(planId: string, itemId: number, type: 'region' | 'landmark') {
+  function handleRemoveItem(planId: string, itemId: number, type: 'region' | 'landmark' | 'terrain') {
     if (confirm('旅行プランから削除しますか？')) {
       removeFromTripPlan(planId, itemId, type);
     }
@@ -82,6 +100,204 @@
   }
 
   $: selectedPlan = plans.find((p) => p.id === selectedPlanId);
+
+  // サマリ用のデータ
+  let regionData: Map<number, RegionWithRelations> = new Map();
+  let landmarkData: Map<number, LandmarkWithRegion> = new Map();
+  let terrainData: Map<number, TerrainWithRegion> = new Map();
+  let summaryLoading = false;
+
+    // 選択中のプランに含まれる地域ID、名所ID、地形IDを取得
+  $: regionIds = selectedPlan
+    ? [...new Set(selectedPlan.items.filter((item: TravelPlanItem) => item.type === 'region').map((item: TravelPlanItem) => item.id))]
+    : [];
+  $: landmarkIds = selectedPlan
+    ? [...new Set(selectedPlan.items.filter((item: TravelPlanItem) => item.type === 'landmark').map((item: TravelPlanItem) => item.id))]
+    : [];
+  $: terrainIds = selectedPlan
+    ? [...new Set(selectedPlan.items.filter((item: TravelPlanItem) => item.type === 'terrain').map((item: TravelPlanItem) => item.id))]
+    : [];
+
+  // データを取得（selectedPlanまたはIDが変更されたとき）
+  $: if (selectedPlan && (regionIds.length > 0 || landmarkIds.length > 0 || terrainIds.length > 0)) {
+    loadSummaryData();
+  } else if (!selectedPlan) {
+    regionData.clear();
+    landmarkData.clear();
+    terrainData.clear();
+  }
+
+  async function loadSummaryData() {
+    if (!selectedPlan) return;
+    summaryLoading = true;
+    try {
+      const promises: Promise<void>[] = [];
+
+      // 地域データを取得
+      for (const id of regionIds) {
+        if (!regionData.has(id)) {
+          promises.push(
+            fetch(`/api/regions/${id}`)
+              .then(async (response) => {
+                if (response.ok) {
+                  const data = await response.json();
+                  regionData.set(id, data);
+                }
+              })
+              .catch((error) => {
+                console.error(`地域データの取得に失敗しました (ID: ${id}):`, error);
+              })
+          );
+        }
+      }
+
+      // 名所データを取得（リストAPIから全件取得してフィルタリング）
+      if (landmarkIds.length > 0) {
+        const missingLandmarkIds = landmarkIds.filter((id) => !landmarkData.has(id));
+        if (missingLandmarkIds.length > 0) {
+          promises.push(
+            fetch('/api/landmarks')
+              .then(async (response) => {
+                if (response.ok) {
+                  const allLandmarks = await response.json();
+                  missingLandmarkIds.forEach((id: number) => {
+                    const landmark = allLandmarks.find((l: LandmarkWithRegion) => l.id === id);
+                    if (landmark) {
+                      landmarkData.set(id, landmark);
+                    }
+                  });
+                }
+              })
+              .catch((error) => {
+                console.error('名所データの取得に失敗しました:', error);
+              })
+          );
+        }
+      }
+
+      // 地形データを取得（リストAPIから全件取得してフィルタリング）
+      if (terrainIds.length > 0) {
+        const missingTerrainIds = terrainIds.filter((id) => !terrainData.has(id));
+        if (missingTerrainIds.length > 0) {
+          promises.push(
+            fetch('/api/terrains')
+              .then(async (response) => {
+                if (response.ok) {
+                  const allTerrains = await response.json();
+                  missingTerrainIds.forEach((id: number) => {
+                    const terrain = allTerrains.find((t: TerrainWithRegion) => t.id === id);
+                    if (terrain) {
+                      terrainData.set(id, terrain);
+                    }
+                  });
+                }
+              })
+              .catch((error) => {
+                console.error('地形データの取得に失敗しました:', error);
+              })
+          );
+        }
+      }
+
+      await Promise.all(promises);
+    } catch (error) {
+      console.error('サマリデータの取得に失敗しました:', error);
+    } finally {
+      summaryLoading = false;
+    }
+  }
+
+  // サマリを生成
+  $: summary = selectedPlan
+    ? generateSummary(selectedPlan, regionData, landmarkData, terrainData)
+    : null;
+
+  function generateSummary(
+    plan: TripPlan,
+    regions: Map<number, RegionWithRelations>,
+    landmarks: Map<number, LandmarkWithRegion>,
+    terrains: Map<number, TerrainWithRegion>
+  ) {
+    const regionItems = plan.items.filter((item: TravelPlanItem) => item.type === 'region');
+    const landmarkItems = plan.items.filter((item: TravelPlanItem) => item.type === 'landmark');
+    const terrainItems = plan.items.filter((item: TravelPlanItem) => item.type === 'terrain');
+
+    // 地域情報を集計
+    const regionNames: string[] = [];
+    const allProducts: Array<{ name: string; region: string; ranking?: number }> = [];
+    const allRegionLandmarks: Array<{ name: string; region: string }> = [];
+    const allRegionTerrains: Array<{ name: string; region: string }> = [];
+
+    regions.forEach((region) => {
+      regionNames.push(region.name);
+      region.products.forEach((product) => {
+        allProducts.push({
+          name: product.name,
+          region: region.name,
+          ranking: product.ranking || undefined,
+        });
+      });
+      region.landmarks.forEach((landmark) => {
+        allRegionLandmarks.push({
+          name: landmark.name,
+          region: region.name,
+        });
+      });
+      region.terrains.forEach((terrain) => {
+        allRegionTerrains.push({
+          name: terrain.name,
+          region: region.name,
+        });
+      });
+    });
+
+    // 追加された名所と地形も含める
+    const addedLandmarks: Array<{ name: string; region?: string; description?: string }> = [];
+    landmarkItems.forEach((item: TravelPlanItem) => {
+      const landmark = landmarks.get(item.id);
+      if (landmark) {
+        addedLandmarks.push({
+          name: landmark.name,
+          region: landmark.region?.name || undefined,
+          description: landmark.description || undefined,
+        });
+      } else {
+        addedLandmarks.push({ name: item.name });
+      }
+    });
+
+    const addedTerrains: Array<{ name: string; region?: string; description?: string }> = [];
+    terrainItems.forEach((item: TravelPlanItem) => {
+      const terrain = terrains.get(item.id);
+      if (terrain) {
+        addedTerrains.push({
+          name: terrain.name,
+          region: terrain.region?.name || undefined,
+          description: terrain.description || undefined,
+        });
+      } else {
+        addedTerrains.push({ name: item.name });
+      }
+    });
+
+    // ベスト3の名産品を抽出
+    const topProducts = allProducts
+      .filter((p) => p.ranking && p.ranking <= 3)
+      .sort((a, b) => (a.ranking || 0) - (b.ranking || 0))
+      .slice(0, 5);
+
+    return {
+      regionCount: regionNames.length,
+      regionNames,
+      productCount: allProducts.length,
+      topProducts,
+      allProducts: allProducts.slice(0, 10),
+      landmarkCount: allRegionLandmarks.length + addedLandmarks.length,
+      allLandmarks: [...allRegionLandmarks, ...addedLandmarks].slice(0, 10),
+      terrainCount: allRegionTerrains.length + addedTerrains.length,
+      allTerrains: [...allRegionTerrains, ...addedTerrains].slice(0, 10),
+    };
+  }
 </script>
 
 <div class="space-y-4">
@@ -191,6 +407,119 @@
         {#if selectedPlan}
           <div class="bg-white p-4 rounded-lg shadow-md border-2 border-orange-200">
             <h2 class="text-2xl font-bold text-orange-600 mb-4">{selectedPlan.name}</h2>
+            
+            <!-- サマリ表示 -->
+            {#if summary && selectedPlan.items.length > 0}
+              <div class="bg-orange-50 p-6 rounded-lg mb-6 border-2 border-orange-200">
+                <h3 class="text-xl font-bold text-orange-600 mb-4 flex items-center gap-2">
+                  <span>📋</span>
+                  <span>旅行プランの概要</span>
+                </h3>
+                {#if summaryLoading}
+                  <div class="text-center py-4">
+                    <p class="text-gray-600">読み込み中...</p>
+                  </div>
+                {:else}
+                  <div class="space-y-4">
+                    <!-- 訪問予定地域 -->
+                    {#if summary.regionCount > 0}
+                      <div class="bg-white p-4 rounded-lg border border-orange-200">
+                        <h4 class="font-bold text-orange-700 mb-2 flex items-center gap-2">
+                          <span>🗾</span>
+                          <span>訪問予定地域 ({summary.regionCount}地域)</span>
+                        </h4>
+                        <p class="text-gray-700 text-sm">{summary.regionNames.join('、')}</p>
+                      </div>
+                    {/if}
+
+                    <!-- 名産品 -->
+                    {#if summary.productCount > 0}
+                      <div class="bg-white p-4 rounded-lg border border-orange-200">
+                        <h4 class="font-bold text-orange-700 mb-2 flex items-center gap-2">
+                          <span>🍎</span>
+                          <span>名産品 ({summary.productCount}種類)</span>
+                        </h4>
+                        {#if summary.topProducts.length > 0}
+                          <div class="mb-2">
+                            <p class="text-xs text-gray-600 mb-1 font-semibold">⭐ ベスト3:</p>
+                            <ul class="list-disc list-inside text-sm text-gray-700 ml-2">
+                              {#each summary.topProducts as product}
+                                <li>
+                                  {product.name}
+                                  {#if product.ranking}
+                                    <span class="text-yellow-600">({product.ranking}位)</span>
+                                  {/if}
+                                  <span class="text-gray-500 text-xs"> - {product.region}</span>
+                                </li>
+                              {/each}
+                            </ul>
+                          </div>
+                        {/if}
+                        {#if summary.allProducts.length > summary.topProducts.length}
+                          <p class="text-xs text-gray-600">
+                            その他: {summary.allProducts.slice(summary.topProducts.length).map(p => p.name).join('、')}
+                            {#if summary.productCount > summary.allProducts.length}
+                              <span class="text-gray-500">他{summary.productCount - summary.allProducts.length}種類</span>
+                            {/if}
+                          </p>
+                        {/if}
+                      </div>
+                    {/if}
+
+                    <!-- 見どころ（名所） -->
+                    {#if summary.landmarkCount > 0}
+                      <div class="bg-white p-4 rounded-lg border border-orange-200">
+                        <h4 class="font-bold text-orange-700 mb-2 flex items-center gap-2">
+                          <span>🏛️</span>
+                          <span>見どころ・名所 ({summary.landmarkCount}件)</span>
+                        </h4>
+                        <ul class="list-disc list-inside text-sm text-gray-700 ml-2 space-y-1">
+                          {#each summary.allLandmarks as landmark}
+                            <li>
+                              <span class="font-semibold">{landmark.name}</span>
+                              {#if landmark.region}
+                                <span class="text-gray-500 text-xs"> - {landmark.region}</span>
+                              {/if}
+                            </li>
+                          {/each}
+                        </ul>
+                        {#if summary.landmarkCount > summary.allLandmarks.length}
+                          <p class="text-xs text-gray-500 mt-2">
+                            他{summary.landmarkCount - summary.allLandmarks.length}件
+                          </p>
+                        {/if}
+                      </div>
+                    {/if}
+
+                    <!-- 特徴的な地形 -->
+                    {#if summary.terrainCount > 0}
+                      <div class="bg-white p-4 rounded-lg border border-orange-200">
+                        <h4 class="font-bold text-orange-700 mb-2 flex items-center gap-2">
+                          <span>⛰️</span>
+                          <span>特徴的な地形 ({summary.terrainCount}件)</span>
+                        </h4>
+                        <ul class="list-disc list-inside text-sm text-gray-700 ml-2 space-y-1">
+                          {#each summary.allTerrains as terrain}
+                            <li>
+                              <span class="font-semibold">{terrain.name}</span>
+                              {#if terrain.region}
+                                <span class="text-gray-500 text-xs"> - {terrain.region}</span>
+                              {/if}
+                            </li>
+                          {/each}
+                        </ul>
+                        {#if summary.terrainCount > summary.allTerrains.length}
+                          <p class="text-xs text-gray-500 mt-2">
+                            他{summary.terrainCount - summary.allTerrains.length}件
+                          </p>
+                        {/if}
+                      </div>
+                    {/if}
+                  </div>
+                {/if}
+              </div>
+            {/if}
+
             {#if selectedPlan.items.length === 0}
               <p class="text-gray-600 text-center py-4">この旅行プランにはまだ項目が追加されていません。</p>
             {:else}
@@ -200,7 +529,7 @@
                     <div>
                       <h3 class="text-lg font-bold text-orange-600">{item.name}</h3>
                       <p class="text-gray-600 text-sm">
-                        {item.type === 'region' ? '地域' : '名所'} | 緯度: {item.latitude.toFixed(4)}, 経度: {item.longitude.toFixed(4)}
+                        {item.type === 'region' ? '地域' : item.type === 'landmark' ? '名所' : '地形'}
                       </p>
                     </div>
                     <button
@@ -221,7 +550,7 @@
         {/if}
 
         <div class="bg-white p-4 rounded-lg shadow-md border-2 border-orange-200">
-          <MapWidget />
+          <MapWidget fitBounds={true} />
         </div>
       </div>
     </div>
